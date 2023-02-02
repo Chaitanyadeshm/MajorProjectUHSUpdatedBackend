@@ -36,6 +36,7 @@ public class Specialization {
 		
 	@Column	
 	private String category;
+	
 	// @formatter:off
 	@ManyToMany(fetch = FetchType.LAZY,
 			cascade = {
@@ -46,4 +47,5 @@ public class Specialization {
 	@JsonIgnore
 	private Set<Users> users = new HashSet<Users>();
 	// @formatter:on
+	
 }

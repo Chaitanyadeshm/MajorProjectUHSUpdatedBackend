@@ -38,6 +38,7 @@ public class GlobalExcetion {
 	@ExceptionHandler(Exception.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<APIResponseEntity> globalException(Exception exception, WebRequest request) {
+		
 		ErrorMessage errorMessage = new ErrorMessage();
 		errorMessage = new ErrorMessage(
 				HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -57,7 +58,11 @@ public class GlobalExcetion {
 					messages.get(0));
 		}
 
-		APIResponseEntity errorResponse = new APIResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), errorMessage, false, HttpStatus.INTERNAL_SERVER_ERROR.value());
+		APIResponseEntity errorResponse = new APIResponseEntity(
+				HttpStatus.INTERNAL_SERVER_ERROR,
+				exception.getMessage(),
+				errorMessage, false,
+				HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 

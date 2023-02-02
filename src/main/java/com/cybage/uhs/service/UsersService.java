@@ -44,39 +44,39 @@ public class UsersService {
 	private static final Logger LOG = LogManager.getLogger(UsersService.class);
 
 	public APIResponseEntity addUser(Users user) {
-		user.setAccountCreated(new Timestamp(new Date().getTime()));
-		UsersAccountStatus inActiveAccountStatus = usersAccountStatusRepository
-				.findUsersAccountStatusEntityByStatus(ConstantVars.ACCOUNT_STATUS.INACTIVE.toString());
-		user.setAccountStatus(inActiveAccountStatus);
-		UsersRole usersRole = usersRoleRepository.findUsersRoleByRoleNameIgnoreCase(user.getUsersRole().getRoleName());
-		user.setUsersRole(usersRole);
-		user.setUsersOTP(null);
-		user.setLoginAttempts(null);
-		if (ifUserAlreadyHaveAnAccount(user.getEmail())) {
-			return ConstantMethods.failureRespone(ConstantVars.USER_ALREADY_REGISTERED_WITH_THIS_ACCOUNT,
-					HttpStatus.CONFLICT);
-		} else {
-			UsersRole doctorsUserRole = usersRoleRepository
-					.findUsersRoleByRoleNameIgnoreCase(ConstantVars.USERS_ROLE.DOCTOR.toString());
-
-			if (user.getUsersRole().getUsersRoleId() == doctorsUserRole.getUsersRoleId()) {
-
-				Set<Specialization> specializationsList = user.getSpecialization();
-				user.setSpecialization(new HashSet<Specialization>());
-				Users newRegisteredDoctor = usersRepository.save(user);
-				APIResponseEntity addingSpecializationResponse = addSpecialization(newRegisteredDoctor.getUsersId(),
-						specializationsList);
-				return addingSpecializationResponse;
-			} else {
-				if (isVerificationLinkSentSuccessfully(user)) {
-					user.setSpecialization(new HashSet<>());
-					Users newPatient = usersRepository.save(user);
-					return ConstantMethods.successRespone(newPatient, ConstantVars.USER_REGISTERED_SUCCESSFULLY);
-				} else {
-					return ConstantMethods.failureRespone(ConstantVars.SOMETHING_WENT_WRONG);
-				}
-			}
-		}
+//		user.setAccountCreated(new Timestamp(new Date().getTime()));
+//		UsersAccountStatus inActiveAccountStatus = usersAccountStatusRepository
+//				.findUsersAccountStatusEntityByStatus(ConstantVars.ACCOUNT_STATUS.INACTIVE.toString());
+//		user.setAccountStatus(inActiveAccountStatus);
+//		UsersRole usersRole = usersRoleRepository.findUsersRoleByRoleNameIgnoreCase(user.getUsersRole().getRoleName());
+//		user.setUsersRole(usersRole);
+//		user.setUsersOTP(null);
+//		user.setLoginAttempts(null);
+//		if (ifUserAlreadyHaveAnAccount(user.getEmail())) {
+//			return ConstantMethods.failureRespone(ConstantVars.USER_ALREADY_REGISTERED_WITH_THIS_ACCOUNT,
+//					HttpStatus.CONFLICT);
+//		} else {
+//			UsersRole doctorsUserRole = usersRoleRepository
+//					.findUsersRoleByRoleNameIgnoreCase(ConstantVars.USERS_ROLE.DOCTOR.toString());
+//
+//			if (user.getUsersRole().getUsersRoleId() == doctorsUserRole.getUsersRoleId()) {
+//
+//				Set<Specialization> specializationsList = user.getSpecialization();
+//				user.setSpecialization(new HashSet<Specialization>());
+//				Users newRegisteredDoctor = usersRepository.save(user);
+//				APIResponseEntity addingSpecializationResponse = addSpecialization(newRegisteredDoctor.getUsersId(),
+//						specializationsList);
+//				return addingSpecializationResponse;
+//			} else {
+//				if (isVerificationLinkSentSuccessfully(user)) {
+//					user.setSpecialization(new HashSet<>());
+//					Users newPatient = usersRepository.save(user);
+//					return ConstantMethods.successRespone(newPatient, ConstantVars.USER_REGISTERED_SUCCESSFULLY);
+//				} else {
+					return ConstantMethods.failureRespone(ConstantVars.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
+//				}
+//			}
+//		}
 
 	}
 
@@ -94,7 +94,8 @@ public class UsersService {
 				doctor.addSpecializataion(newSpecialization);
 			}
 		}
-		usersRepository.save(doctor);
+		Users u = usersRepository.save(doctor);
+	
 		Users doctorWithSpecializationAdded = usersRepository.findUsersByUsersId(usersId);
 		if (isDoctorsCredentialSendOnMailSuccessfully(doctorWithSpecializationAdded)) {
 			return ConstantMethods.successRespone(doctorWithSpecializationAdded,

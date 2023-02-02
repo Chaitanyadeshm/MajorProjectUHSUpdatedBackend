@@ -32,8 +32,10 @@ public class UsersController {
 
 	@GetMapping("/get-all-users-by-account-status/{usersAccountStatus}")
 	public ResponseEntity<APIResponseEntity> getAllUsersByRole(@PathVariable String usersAccountStatus) {
+		
 		APIResponseEntity response = usersService.getAllUsersDetailsByAcountStatus(usersAccountStatus);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		
+		return new ResponseEntity<>(response, response.getHttpStatus());
 	}
 
 	@GetMapping("/get-all-users-by-role/{usersRoleId}")
