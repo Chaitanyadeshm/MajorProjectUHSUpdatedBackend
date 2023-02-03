@@ -9,9 +9,11 @@ import lombok.*;
 @ToString
 //@Entity
 public class MailTemplateModel {
+	
 	private String mailSubject;
+	
 	private String mailBody;
+	
 	private Users user;
-
 
 }
