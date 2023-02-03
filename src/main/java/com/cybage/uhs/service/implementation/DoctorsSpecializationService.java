@@ -1,4 +1,4 @@
-package com.cybage.uhs.service;
+package com.cybage.uhs.service.implementation;
 
 import org.springframework.stereotype.Service;
 

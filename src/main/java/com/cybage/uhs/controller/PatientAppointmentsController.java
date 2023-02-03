@@ -22,44 +22,48 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cybage.uhs.bean.APIResponseEntity;
 import com.cybage.uhs.model.PatientsAppointments;
-import com.cybage.uhs.service.PatientAppointmentsService;
+import com.cybage.uhs.service.implementation.PatientAppointmentsServiceImpl;
 
 @RestController
 @RequestMapping("/appointments")
 @CrossOrigin
 public class PatientAppointmentsController {
 
+	private final PatientAppointmentsServiceImpl patientAppointmentsService;
+
 	@Autowired
-	PatientAppointmentsService patientAppointmentsService;
+	public PatientAppointmentsController(PatientAppointmentsServiceImpl patientAppointmentsService) {
+		this.patientAppointmentsService = patientAppointmentsService;
+	}
 
 	@GetMapping("/get-all")
 	public ResponseEntity<APIResponseEntity> getAllAppointments() {
-		APIResponseEntity allAppointments = patientAppointmentsService.getAllAppointments();
+		APIResponseEntity allAppointments = this.patientAppointmentsService.getAllAppointments();
 		return new ResponseEntity<>(allAppointments, HttpStatus.OK);
 	}
 
 	@GetMapping("/get-by-id/{appointmentId}")
 	public ResponseEntity<APIResponseEntity> getAppointmentById(@PathVariable Long appointmentId) {
-		APIResponseEntity appointment = patientAppointmentsService.getAppointmentById(appointmentId);
+		APIResponseEntity appointment = this.patientAppointmentsService.getAppointmentById(appointmentId);
 		return new ResponseEntity<>(appointment, HttpStatus.OK);
 	}
 
 	@GetMapping("/get-by-users-id/{usersId}")
 	public ResponseEntity<APIResponseEntity> getAllAppointmentsForDoctor(@PathVariable Long usersId) {
-		APIResponseEntity allAppointments = patientAppointmentsService.getAllAppointmentsForUser(usersId);
+		APIResponseEntity allAppointments = this.patientAppointmentsService.getAllAppointmentsForUser(usersId);
 		return new ResponseEntity<>(allAppointments, HttpStatus.OK);
 	}
 
 	@PostMapping("/add-appointment")
 	public ResponseEntity<APIResponseEntity> addAppointment(@RequestBody PatientsAppointments patientsAppointments) {
-		APIResponseEntity appointmentReponse = patientAppointmentsService.addAppointment(patientsAppointments);
+		APIResponseEntity appointmentReponse = this.patientAppointmentsService.addAppointment(patientsAppointments);
 		return new ResponseEntity<>(appointmentReponse, HttpStatus.OK);
 	}
 
 	@PutMapping("/update-appointment/{appointmentId}")
 	public ResponseEntity<APIResponseEntity> updateAppointment(@RequestBody PatientsAppointments patientsAppointments,
 			@PathVariable Long appointmentId) {
-		APIResponseEntity updateAppointmentReponse = patientAppointmentsService.updateAppointment(patientsAppointments,
+		APIResponseEntity updateAppointmentReponse = this.patientAppointmentsService.updateAppointment(patientsAppointments,
 				appointmentId);
 		return new ResponseEntity<>(updateAppointmentReponse, HttpStatus.OK);
 	}
@@ -69,7 +73,7 @@ public class PatientAppointmentsController {
 	public ResponseEntity<APIResponseEntity> addAppointmentsPrescription(
 			@RequestBody PatientsAppointments patientsAppointments, @PathVariable Long appointmentId) {
 		
-		APIResponseEntity addAppointmentsPrescriptionReponse = patientAppointmentsService
+		APIResponseEntity addAppointmentsPrescriptionReponse = this.patientAppointmentsService
 				.addAppointmentsPrescription(patientsAppointments, appointmentId);
 		return new ResponseEntity<>(addAppointmentsPrescriptionReponse, HttpStatus.OK);
 	}
@@ -77,7 +81,7 @@ public class PatientAppointmentsController {
 	@GetMapping("/change-status/{appointmentId}/{status}")
 	public ResponseEntity<APIResponseEntity> changeAppointmentStatus(@PathVariable Long appointmentId,
 			@PathVariable String status) {
-		APIResponseEntity appointmentStatusResponse = patientAppointmentsService.changeAppointmentStatus(appointmentId,
+		APIResponseEntity appointmentStatusResponse = this.patientAppointmentsService.changeAppointmentStatus(appointmentId,
 				status);
 		return new ResponseEntity<>(appointmentStatusResponse, HttpStatus.OK);
 	}
@@ -85,7 +89,7 @@ public class PatientAppointmentsController {
 	@GetMapping("/download-prescription/{appointmentId}")
 	public ResponseEntity<Resource> downloadPrescription(@PathVariable Long appointmentId)  {
 		
-		APIResponseEntity appointment = patientAppointmentsService.getAppointmentById(appointmentId);
+		APIResponseEntity appointment = this.patientAppointmentsService.getAppointmentById(appointmentId);
 		PatientsAppointments appointmentDetails = (PatientsAppointments) appointment.getData();
 		
 		String prescriptionFileName = appointmentDetails.getPatientDetails().getUsersId() + "_"

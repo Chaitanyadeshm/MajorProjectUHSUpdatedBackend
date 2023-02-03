@@ -12,6 +12,9 @@ import com.cybage.uhs.model.Specialization;
 public interface SpecializationRepository extends JpaRepository<Specialization, Long> {
 
 	List<Specialization> findSpecializationBySpecializationIdIn(List<Integer> specializationId);
-	Specialization findSpecializatinoBySpecializationId(Long specializationId);
+	
+	Specialization findSpecializatinBySpecializationId(Long specializationId);
+	
+//	List<Specialization>
 
 }

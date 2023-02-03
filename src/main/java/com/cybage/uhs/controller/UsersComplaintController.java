@@ -13,16 +13,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cybage.uhs.bean.APIResponseEntity;
 import com.cybage.uhs.model.UsersComplaint;
-import com.cybage.uhs.service.UsersComplaintService;
+import com.cybage.uhs.service.implementation.UsersComplaintServiceImpl;
 
 @RestController
 @RequestMapping("/patients-complaints")
 @CrossOrigin
 public class UsersComplaintController {
 
-	@Autowired
-	private UsersComplaintService usersComplaintService;
+	private final UsersComplaintServiceImpl usersComplaintService;
 	
+	@Autowired
+	public UsersComplaintController(UsersComplaintServiceImpl usersComplaintService) {
+		this.usersComplaintService = usersComplaintService;
+	}
+
 	@GetMapping("/get-all")
 	public ResponseEntity<APIResponseEntity> getAllUsers() {
 		APIResponseEntity allComplaints = usersComplaintService.getAllComplaints();

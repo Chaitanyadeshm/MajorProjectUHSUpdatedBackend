@@ -16,7 +16,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -34,7 +37,7 @@ import lombok.ToString;
 @Entity
 public class Users implements Serializable {
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "usersId")
@@ -49,13 +52,16 @@ public class Users implements Serializable {
 	private String lastname;
 
 	@NotNull
+	@Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}")
 	@Column(name = "email")
 	private String email;
-	
+
 	@Column(name = "usersProfileUrl")
 	private String usersProfileUrl;
 
 	@NotNull
+	@Size(min = 10, max = 10)
+	@Pattern(regexp = "(^$|[0-9]{10})")
 	@Column(name = "mobile")
 	private String mobile;
 
@@ -96,6 +102,5 @@ public class Users implements Serializable {
 		this.specialization.add(newSpecialization);
 		newSpecialization.getUsers().add(this);
 	}
-
 
 }
