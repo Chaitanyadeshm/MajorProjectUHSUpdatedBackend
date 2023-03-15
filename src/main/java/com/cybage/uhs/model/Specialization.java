@@ -37,6 +37,18 @@ public class Specialization {
 	@Column	
 	private String category;
 	
+	
+	
+	
+	public Specialization(Long specializationId, String category) {
+		super();
+		this.specializationId = specializationId;
+		this.category = category;
+	}
+
+
+
+
 	// @formatter:off
 	@ManyToMany(fetch = FetchType.LAZY,
 			cascade = {

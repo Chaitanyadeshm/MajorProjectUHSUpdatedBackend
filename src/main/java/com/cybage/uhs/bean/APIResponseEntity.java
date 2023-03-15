@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class APIResponseEntity {
+public class ApiResponseEntity {
 
 	private HttpStatus httpStatus;
 	

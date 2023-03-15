@@ -5,12 +5,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
 import com.cybage.uhs.model.Specialization;
 import com.cybage.uhs.repository.SpecializationRepository;
 import com.cybage.uhs.service.SpecializationService;
 import com.cybage.uhs.utils.ConstantMethods;
-import com.cybage.uhs.utils.ConstantVars;
+import com.cybage.uhs.utils.VariablesUtil;
 
 
 @Service
@@ -25,16 +25,22 @@ public class SpecializationServiceImpl implements SpecializationService {
 	}
 
 	@Override
-	public APIResponseEntity getAllSpiecialization() {
+	public ApiResponseEntity getAllSpiecialization() {
 	List<Specialization> allSpecializations = this.specializationRepository.findAll();
 		return ConstantMethods.successRespone(allSpecializations,
-				ConstantVars.ALL_SPECIALIZATION_FETCHED_SUCCESSFULLY);
+				VariablesUtil.ALL_SPECIALIZATION_FETCHED_SUCCESSFULLY);
 	}
 
 	@Override
-	public APIResponseEntity getByCategory(String category) {
+	public ApiResponseEntity getByCategory(String category) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public ApiResponseEntity addSpecialization(Specialization specialization) {
+		Specialization newAddedSpecialization = specializationRepository.save(specialization);
+		return ConstantMethods.successRespone(newAddedSpecialization, VariablesUtil.SPECIALIZATION_ADDDED_SUCCESSFULLY);
 	}
 
 }

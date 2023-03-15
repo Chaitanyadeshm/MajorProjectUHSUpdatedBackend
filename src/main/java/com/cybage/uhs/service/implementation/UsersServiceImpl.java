@@ -1,6 +1,7 @@
 package com.cybage.uhs.service.implementation;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
 import com.cybage.uhs.exception.ResourceNotFoundException;
 import com.cybage.uhs.model.MailTemplateModel;
 import com.cybage.uhs.model.Specialization;
@@ -25,7 +26,7 @@ import com.cybage.uhs.repository.UsersRepository;
 import com.cybage.uhs.repository.UsersRoleRepository;
 import com.cybage.uhs.service.UsersService;
 import com.cybage.uhs.utils.ConstantMethods;
-import com.cybage.uhs.utils.ConstantVars;
+import com.cybage.uhs.utils.VariablesUtil;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -50,109 +51,175 @@ public class UsersServiceImpl implements UsersService {
 	private static final Logger LOG = LogManager.getLogger(UsersServiceImpl.class);
 
 	@Override
-	public APIResponseEntity addUser(Users user) {
+	public ApiResponseEntity addUser(Users user) {
+
+		if (checkIfUserAlreadyHaveAnAccount(user.getEmail())) {
+			LOG.warn(VariablesUtil.USER_ALREADY_REGISTERED_WITH_THIS_EMAIL);
+			return ConstantMethods.failureRespone(VariablesUtil.USER_ALREADY_REGISTERED_WITH_THIS_EMAIL,
+					HttpStatus.CONFLICT);
+		}
 
 		user.setAccountCreated(new Timestamp(new Date().getTime()));
 
-		UsersAccountStatus inActiveAccountStatus = usersAccountStatusRepository
-				.findUsersAccountStatusEntityByStatus(ConstantVars.ACCOUNT_STATUS.INACTIVE.toString());
-		user.setAccountStatus(inActiveAccountStatus);
 		UsersRole usersRole = this.usersRoleRepository
 				.findUsersRoleByRoleNameIgnoreCase(user.getUsersRole().getRoleName());
+
 		user.setUsersRole(usersRole);
-		user.setUsersOTP(null);
-		user.setLoginAttempts(null);
-		if (checkIfUserAlreadyHaveAnAccount(user.getEmail())) {
-			return ConstantMethods.failureRespone(ConstantVars.USER_ALREADY_REGISTERED_WITH_THIS_ACCOUNT,
-					HttpStatus.CONFLICT);
-		} else {
-			UsersRole doctorsRole = this.usersRoleRepository
-					.findUsersRoleByRoleNameIgnoreCase(ConstantVars.USERS_ROLE.DOCTOR.toString());
+		
+		UsersRole doctorsRole = this.usersRoleRepository
+				.findUsersRoleByRoleNameIgnoreCase(VariablesUtil.USERS_ROLE.DOCTOR.toString());
+		boolean isUserTypeDoctor = usersRole.equals(doctorsRole);
+//
+		if (isUserTypeDoctor) {
+			checkIsAllSpecializationsPresent(user.getSpecialization());
+			Users registeredDoctor = this.usersRepository.save(user);
+			return ConstantMethods.successRespone(registeredDoctor, VariablesUtil.USER_REGISTERED_SUCCESSFULLY);
+//			return addSpecializationAndUpdateDoctor(registeredDoctor.getUsersId());
 
-			if (user.getUsersRole().equals(doctorsRole)) {
+		}
+//		
+//		UsersAccountStatus inActiveAccountStatus = usersAccountStatusRepository
+//				.findUsersAccountStatusEntityByStatus(VariablesUtil.ACCOUNT_STATUS.INACTIVE.toString());
+//		user.setAccountStatus(inActiveAccountStatus);
+//
+//		if (isAccountActivationLinkSentSuccessfully(user)) {
+//			Users newPatient = this.usersRepository.save(user);
+		return ConstantMethods.successRespone(user, VariablesUtil.USER_REGISTERED_SUCCESSFULLY);
+//		} else {
+//			return ConstantMethods.failureRespone(VariablesUtil.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
+//		}
 
-				Set<Specialization> specializationsList = user.getSpecialization();
-				user.setSpecialization(new HashSet<Specialization>());
-				Users newRegisteredDoctor = this.usersRepository.save(user);
-				APIResponseEntity addingSpecializationResponse = addSpecialization(newRegisteredDoctor.getUsersId(),
-						specializationsList);
-				return addingSpecializationResponse;
-			} else {
-				if (isVerificationLinkSentSuccessfully(user)) {
-					Users newPatient = this.usersRepository.save(user);
-					return ConstantMethods.successRespone(newPatient, ConstantVars.USER_REGISTERED_SUCCESSFULLY);
-				} else {
-					return ConstantMethods.failureRespone(ConstantVars.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
+	}
+
+	private ApiResponseEntity addSpecializationAndUpdateDoctor(Long userId) {
+		
+		Users user = this.usersRepository.findUsersByUsersId(userId);
+		Set<Specialization> specializationsList = user.getSpecialization();
+//		Set<Object> newSpecializationList = new HashSet<Object>();
+		System.out.println("old specialization set: " + specializationsList);
+		for (Specialization specialization : specializationsList) {
+
+			Specialization specializationObject = new Specialization();
+
+			specializationObject = this.specializationRepository
+					.findSpecializationBySpecializationId(specialization.getSpecializationId());
+
+			user.addSpecializataion(specializationObject);
+		}
+		Users registeredDoctorWithSpecialization = this.usersRepository.save(user);
+//		System.out.println("new specialization set: " + newSpecializationList);
+
+		return ConstantMethods.successRespone(registeredDoctorWithSpecialization,
+				VariablesUtil.DOCTOR_REGISTERED_SUCCESSFULLY);
+
+	}
+
+	private void checkIsAllSpecializationsPresent(Set<Specialization> specializationsList) {
+		for (Specialization specialization : specializationsList) {
+			try {
+				Specialization specializationObject = new Specialization();
+
+				specializationObject = this.specializationRepository
+						.findSpecializationBySpecializationId(specialization.getSpecializationId());
+				if (specializationObject == null) {
+					throw new ResourceNotFoundException("Cannot find selected specialization(s).");
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new ResourceNotFoundException(
+						"Cannot find selected specialization with id: " + specialization.getSpecializationId());
 			}
 		}
 
 	}
 
 	@Override
-	public APIResponseEntity addSpecialization(Long usersId, Set<Specialization> specializationsList) {
+	public ApiResponseEntity addSpecialization(Long usersId, Set<Specialization> specializationsList) {
 
 		Users doctor = this.usersRepository.findUsersByUsersId(usersId);
 		for (Specialization specialization : specializationsList) {
-			if (specialization.getSpecializationId() != null && specialization.getSpecializationId() != 0L) {
+			try {
+
 				Specialization newSpecialization = new Specialization();
 				newSpecialization = this.specializationRepository
-						.findSpecializatinBySpecializationId(specialization.getSpecializationId());
+						.findSpecializationBySpecializationId(specialization.getSpecializationId());
+
 				doctor.addSpecializataion(newSpecialization);
-			} else {
-				Specialization newSpecialization = this.specializationRepository.save(specialization);
-				doctor.addSpecializataion(newSpecialization);
+			} catch (Exception e) {
+				this.usersRepository.deleteById(usersId);
+				e.printStackTrace();
+				throw new ResourceNotFoundException("Cannot find selected specialization(s).");
 			}
 		}
 
 		Users doctorWithSpecializationAdded = this.usersRepository.findUsersByUsersId(usersId);
-		if (isDoctorsCredentialSendOnMailSuccessfully(doctorWithSpecializationAdded)) {
-			return ConstantMethods.successRespone(doctorWithSpecializationAdded,
-					ConstantVars.DOCTOR_REGISTERED_SUCCESSFULLY);
+		Users user = this.usersRepository.save(doctorWithSpecializationAdded);
+		if (isDoctorsCredentialSendOnMailSuccessfully(user)) {
+			return ConstantMethods.successRespone(user, VariablesUtil.DOCTOR_REGISTERED_SUCCESSFULLY);
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.DOCTOR_REGISTERATION_FAILED);
+			return ConstantMethods.failureRespone(VariablesUtil.DOCTOR_REGISTERATION_FAILED);
 		}
 
 	}
 
 	@Override
-	public APIResponseEntity getAllUsersDetails() {
+	public ApiResponseEntity getAllUsersDetails() {
 		List<Users> allUsers = this.usersRepository.findAllByOrderByUsersIdDesc();
-		return ConstantMethods.successRespone(allUsers, ConstantVars.ALL_USERS_FETCHED_SUCCESSFULLY);
+		return ConstantMethods.successRespone(allUsers, VariablesUtil.ALL_USERS_FETCHED_SUCCESSFULLY);
 	}
 
 	@Override
-	public APIResponseEntity getAllUsersByUsersRole(Long usersRoleId) {
+	public ApiResponseEntity getAllUsersByUsersRole(Long usersRoleId) {
 		UsersRole usersRole = this.usersRoleRepository.findUsersRoleByUsersRoleId(usersRoleId);
 		List<Users> specificUsersRoleUsers = this.usersRepository.findUsersByUsersRole(usersRole);
 		if (specificUsersRoleUsers.size() > 0) {
 			return ConstantMethods.successRespone(specificUsersRoleUsers,
-					ConstantVars.USERS_BY_USER_ROLE_FETCHED_SUCCESSFULLY);
+					VariablesUtil.USERS_BY_USER_ROLE_FETCHED_SUCCESSFULLY);
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.USERS_OF_USER_ROLE_NOT_PRESENT, HttpStatus.NO_CONTENT);
+			return ConstantMethods.failureRespone(VariablesUtil.USERS_OF_USER_ROLE_NOT_PRESENT, HttpStatus.NO_CONTENT);
 		}
 	}
 
 	@Override
-	public APIResponseEntity getAllUsersDetailsByAcountStatus(String accountStatus) {
+	public ApiResponseEntity getAllUsersDetailsByAcountStatus(String accountStatus) {
 		UsersAccountStatus usersAccountStatus = usersAccountStatusRepository
 				.findUsersAccountStatusEntityByStatus(accountStatus);
 		if (usersAccountStatus != null) {
 			List<Users> usersByAccountStatus = this.usersRepository.findUsersByAccountStatus(usersAccountStatus);
 			if (usersByAccountStatus.size() > 0) {
 				return ConstantMethods.successRespone(usersByAccountStatus,
-						ConstantVars.ALL_USERS_BY_ACCOUNT_STATUS_FETCHED_SUCCESSFULLY);
+						VariablesUtil.ALL_USERS_BY_ACCOUNT_STATUS_FETCHED_SUCCESSFULLY);
 			} else {
-				return ConstantMethods.failureRespone(ConstantVars.USERS_WITH_ACCOUNT_STATUS_ARE_NOT_PRESENT,
-						HttpStatus.NO_CONTENT);
+				return ConstantMethods.failureRespone(VariablesUtil.USERS_WITH_ACCOUNT_STATUS_ARE_NOT_PRESENT,
+						HttpStatus.OK);
 			}
 		} else {
-			LOG.warn(ConstantVars.ALL_USERS_BY_ACCOUNT_STATUS_FETCH_FAILED);
-			return ConstantMethods.failureRespone(ConstantVars.ALL_USERS_BY_ACCOUNT_STATUS_FETCH_FAILED);
+			LOG.warn(VariablesUtil.ALL_USERS_BY_ACCOUNT_STATUS_FETCH_FAILED);
+			return ConstantMethods.failureRespone(VariablesUtil.ALL_USERS_BY_ACCOUNT_STATUS_FETCH_FAILED);
 		}
 	}
 
-	private boolean isVerificationLinkSentSuccessfully(Users user) {
+	@Override
+	public ApiResponseEntity getAllNontActiveUsers() {
+		UsersAccountStatus activeAccountStatus = usersAccountStatusRepository
+				.findUsersAccountStatusEntityByStatus(VariablesUtil.ACCOUNT_STATUS.ACTIVE.toString());
+		if (activeAccountStatus != null) {
+			List<Users> usersByAccountStatus = this.usersRepository
+					.findUsersByAccountStatusNotLike(activeAccountStatus);
+			if (usersByAccountStatus.size() > 0) {
+				return ConstantMethods.successRespone(usersByAccountStatus,
+						VariablesUtil.ALL_USERS_BY_ACCOUNT_STATUS_FETCHED_SUCCESSFULLY);
+			} else {
+				return ConstantMethods.failureRespone(VariablesUtil.USERS_WITH_ACCOUNT_STATUS_ARE_NOT_PRESENT,
+						HttpStatus.OK);
+			}
+		} else {
+			LOG.warn(VariablesUtil.ALL_USERS_BY_ACCOUNT_STATUS_FETCH_FAILED);
+			return ConstantMethods.failureRespone(VariablesUtil.ALL_USERS_BY_ACCOUNT_STATUS_FETCH_FAILED);
+		}
+	}
+
+	private boolean isAccountActivationLinkSentSuccessfully(Users user) {
 		MailTemplateModel accountVerificationLinkMailTemplate = new MailTemplateModel();
 		accountVerificationLinkMailTemplate.setUser(user);
 		accountVerificationLinkMailTemplate.setMailSubject("OTP for Sign In to your account ");
@@ -167,13 +234,13 @@ public class UsersServiceImpl implements UsersService {
 	}
 
 	@Override
-	public APIResponseEntity updateUser(Users user, Long usersId) {
+	public ApiResponseEntity updateUser(Users user, Long usersId) {
 		user.setUsersId(usersId);
 		Users updatedUser = this.usersRepository.save(user);
 		if (updatedUser != null) {
-			return ConstantMethods.successRespone(updatedUser, ConstantVars.USER_UPDATED_SUCCESSFULLY);
+			return ConstantMethods.successRespone(updatedUser, VariablesUtil.USER_UPDATED_SUCCESSFULLY);
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.USER_UPDATED_FAILED);
+			return ConstantMethods.failureRespone(VariablesUtil.USER_UPDATED_FAILED);
 		}
 	}
 
@@ -184,10 +251,10 @@ public class UsersServiceImpl implements UsersService {
 		if (user != null) {
 			user.setAccountStatus(new UsersAccountStatus(1, null, null));
 			this.usersRepository.save(user);
-			return ConstantVars.EMAIL_VERIFIED_PAGE;
+			return VariablesUtil.EMAIL_VERIFIED_PAGE;
 		} else {
 //			return new ResourceNotFoundException(ConstantVars.ERROR_RESPONSE);
-			return ConstantVars.ERROR_RESPONSE;
+			return VariablesUtil.ERROR_RESPONSE;
 		}
 	}
 
@@ -208,64 +275,66 @@ public class UsersServiceImpl implements UsersService {
 	}
 
 	@Override
-	public APIResponseEntity getUserByUsersId(Long usersId) {
+	public ApiResponseEntity getUserByUsersId(Long usersId) {
 		Users user = this.usersRepository.findUsersByUsersId(usersId);
 		if (user != null) {
-			return ConstantMethods.successRespone(user, ConstantVars.USERS_DATA_BY_USER_ID);
+			return ConstantMethods.successRespone(user, VariablesUtil.USERS_DATA_BY_USER_ID);
 		} else {
-			throw new ResourceNotFoundException(ConstantVars.ERROR_RESPONSE);
+			throw new ResourceNotFoundException(VariablesUtil.ERROR_RESPONSE);
 		}
 	}
 
 	@Override
-	public APIResponseEntity deleteUserById(Long usersId) {
+	public ApiResponseEntity deleteUserById(Long usersId) {
 		Users user = this.usersRepository.findUsersByUsersId(usersId);
 		UsersAccountStatus deletedAccountStatus = usersAccountStatusRepository
-				.findUsersAccountStatusEntityByStatus(ConstantVars.ACCOUNT_STATUS.DELETED.toString());
+				.findUsersAccountStatusEntityByStatus(VariablesUtil.ACCOUNT_STATUS.DELETED.toString());
 		UsersAccountStatus usersCurrentAccountStatus = user.getAccountStatus();
 		if (usersCurrentAccountStatus.equals(deletedAccountStatus)) {
-			return ConstantMethods.failureRespone(ConstantVars.USER_ALREADY_DELETED);
+			return ConstantMethods.failureRespone(VariablesUtil.USER_ALREADY_DELETED);
 		} else {
 			user.setAccountStatus(deletedAccountStatus);
 			Users updatedUser = this.usersRepository.save(user);
-			return ConstantMethods.successRespone(updatedUser, ConstantVars.USER_DELETED_SUCCESSFULLY);
+			return ConstantMethods.successRespone(updatedUser, VariablesUtil.USER_DELETED_SUCCESSFULLY);
 		}
 	}
 
 	@Override
-	public APIResponseEntity loginUserByEmail(String email) {
+	public ApiResponseEntity loginUserByEmail(String email) {
 		Users user = this.usersRepository.findUsersByEmail(email);
 		if (user != null) {
 			boolean isUserActive = user.getAccountStatus().getStatus()
-					.contentEquals(ConstantVars.ACCOUNT_STATUS.ACTIVE.toString());
+					.contentEquals(VariablesUtil.ACCOUNT_STATUS.ACTIVE.toString());
 			if (isUserActive) {
 				user.setUsersOTP(ConstantMethods.generateOtp());
+				System.out.println("new otp: " + user.getUsersOTP());
+
 				if (isOtpSentSuccessfully(user)) {
 					this.usersRepository.save(user);
-					return ConstantMethods.successRespone(user, ConstantVars.OTP_SENT_SUCCESSFULLY);
+					return ConstantMethods.successRespone(user, VariablesUtil.OTP_SENT_SUCCESSFULLY);
 				} else {
-					return ConstantMethods.failureRespone(ConstantVars.SOMETHING_WENT_WRONG);
+					return ConstantMethods.failureRespone(VariablesUtil.SOMETHING_WENT_WRONG);
 				}
 			} else {
 				return inactiveUser(user);
 			}
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.EMAIL_NOT_REGISTERED);
+			return ConstantMethods.failureRespone(VariablesUtil.EMAIL_NOT_REGISTERED);
 		}
 	}
 
-	private APIResponseEntity inactiveUser(Users user) {
+	private ApiResponseEntity inactiveUser(Users user) {
 		String currentAccountStatus;
-		if (user.getAccountStatus().getStatus().equalsIgnoreCase(ConstantVars.ACCOUNT_STATUS.INACTIVE.toString())) {
-			currentAccountStatus = ConstantVars.VERIFY_ACCOUNT_BEFORE_LOGIN;
+		if (user.getAccountStatus().getStatus().equalsIgnoreCase(VariablesUtil.ACCOUNT_STATUS.INACTIVE.toString())) {
+			currentAccountStatus = VariablesUtil.VERIFY_ACCOUNT_BEFORE_LOGIN;
 		} else if (user.getAccountStatus().getStatus()
-				.equalsIgnoreCase(ConstantVars.ACCOUNT_STATUS.BLOCKED.toString())) {
-			currentAccountStatus = ConstantVars.ACCOUNT_BLOCKED;
+				.equalsIgnoreCase(VariablesUtil.ACCOUNT_STATUS.BLOCKED.toString())) {
+			currentAccountStatus = VariablesUtil.ACCOUNT_BLOCKED;
 		} else if (user.getAccountStatus().getStatus()
-				.equalsIgnoreCase(ConstantVars.ACCOUNT_STATUS.BLOCKED_BY_ADMIN.toString())) {
-			currentAccountStatus = ConstantVars.ACCOUNT_BLOCKED_BY_ADMIN;
+				.equalsIgnoreCase(VariablesUtil.ACCOUNT_STATUS.BLOCKED_BY_ADMIN.toString())) {
+			currentAccountStatus = VariablesUtil.ACCOUNT_BLOCKED_BY_ADMIN;
 		} else {
-			currentAccountStatus = ConstantVars.ACCOUNT_DELETED;
+			currentAccountStatus = VariablesUtil.ACCOUNT_DELETED;
 		}
 		return ConstantMethods.failureRespone(currentAccountStatus, HttpStatus.UNAUTHORIZED);
 	}
@@ -282,51 +351,51 @@ public class UsersServiceImpl implements UsersService {
 	}
 
 	@Override
-	public APIResponseEntity verifyEmailWithOTP(String email, int userEnteredOtp) {
+	public ApiResponseEntity verifyEmailWithOTP(String email, int userEnteredOtp) {
 		Users user = this.usersRepository.findUsersByEmail(email);
 		if (user.getAccountStatus().getUsersAccountStatusId() == 3) {
-			return ConstantMethods.failureRespone(ConstantVars.ACCOUNT_BLOCKED);
+			return ConstantMethods.failureRespone(VariablesUtil.ACCOUNT_BLOCKED);
 		}
 		if (user.getUsersOTP() == userEnteredOtp) {
 			user.setUsersOTP(null);
 			Users updatedUser = this.usersRepository.save(user);
-			return ConstantMethods.successRespone(updatedUser, ConstantVars.OTP_VERIFIED_SUCCESSFULLY);
+			return ConstantMethods.successRespone(updatedUser, VariablesUtil.OTP_VERIFIED_SUCCESSFULLY);
 		} else {
 			int remainingAttempt;
-			remainingAttempt = ConstantVars.MAX_LOGIN_ATTEMPTS_ALLOWED - 1;
+			remainingAttempt = VariablesUtil.MAX_LOGIN_ATTEMPTS_ALLOWED - 1;
 			if (user.getLoginAttempts() == null) {
 				user.setLoginAttempts(remainingAttempt);
 				this.usersRepository.save(user);
-				return ConstantMethods.failureRespone(ConstantVars.WRONG_OTP_ENTERED + "\nYou have " + remainingAttempt
+				return ConstantMethods.failureRespone(VariablesUtil.WRONG_OTP_ENTERED + "\nYou have " + remainingAttempt
 						+ " attempt(s) to enter correct OTP.", HttpStatus.UNAUTHORIZED);
 			} else if (user.getLoginAttempts() == 0) {
 				user.setLoginAttempts(null);
 				UsersAccountStatus activeAccountStatus = usersAccountStatusRepository
-						.findUsersAccountStatusEntityByStatus(ConstantVars.ACCOUNT_STATUS.ACTIVE.toString());
+						.findUsersAccountStatusEntityByStatus(VariablesUtil.ACCOUNT_STATUS.ACTIVE.toString());
 				user.setAccountStatus(activeAccountStatus);
 				this.usersRepository.save(user);
-				return ConstantMethods.failureRespone(ConstantVars.MAX_OTP_ENTERED_EXCEEDED, HttpStatus.UNAUTHORIZED);
+				return ConstantMethods.failureRespone(VariablesUtil.MAX_OTP_ENTERED_EXCEEDED, HttpStatus.UNAUTHORIZED);
 			} else {
 				remainingAttempt = user.getLoginAttempts() - 1;
 				user.setLoginAttempts(remainingAttempt);
 				this.usersRepository.save(user);
-				return ConstantMethods.failureRespone(ConstantVars.WRONG_OTP_ENTERED + "\nYou have " + remainingAttempt
+				return ConstantMethods.failureRespone(VariablesUtil.WRONG_OTP_ENTERED + "\nYou have " + remainingAttempt
 						+ " attempts to enter correct OTP.", HttpStatus.UNAUTHORIZED);
 			}
 		}
 	}
 
 	@Override
-	public APIResponseEntity unblockUsersAccount(Long usersId) {
+	public ApiResponseEntity unblockUsersAccount(Long usersId) {
 		Users user = this.usersRepository.findUsersByUsersId(usersId);
 		if (user != null) {
 			UsersAccountStatus activeAccountStatus = usersAccountStatusRepository
-					.findUsersAccountStatusEntityByStatus(ConstantVars.ACCOUNT_STATUS.ACTIVE.toString());
+					.findUsersAccountStatusEntityByStatus(VariablesUtil.ACCOUNT_STATUS.ACTIVE.toString());
 			user.setAccountStatus(activeAccountStatus);
 			Users activatedUserAccount = this.usersRepository.save(user);
-			return ConstantMethods.successRespone(activatedUserAccount, ConstantVars.USER_UNBLOCKED_SUCCESSFULLY);
+			return ConstantMethods.successRespone(activatedUserAccount, VariablesUtil.USER_UNBLOCKED_SUCCESSFULLY);
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.UNBLOCKING_USER_FAILED,
+			return ConstantMethods.failureRespone(VariablesUtil.UNBLOCKING_USER_FAILED,
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -337,6 +406,24 @@ public class UsersServiceImpl implements UsersService {
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	public ApiResponseEntity getAllDoctorsWithSpecialization(String specialization) {
+		UsersRole doctorsRole = usersRoleRepository
+				.findUsersRoleByRoleNameIgnoreCase(VariablesUtil.USERS_ROLE.DOCTOR.toString());
+		Specialization specializationObject = specializationRepository.findSpecializatinoByCategory(specialization);
+		List<Specialization> specializations = new ArrayList<Specialization>();
+		specializations.add(specializationObject);
+		List<Users> doctorsWithSpecialization = usersRepository.findUsersByUsersRoleAndSpecializationIn(doctorsRole,
+				specializations);
+		if (doctorsWithSpecialization.size() > 0) {
+			return ConstantMethods.successRespone(doctorsWithSpecialization,
+					"Doctors with specialization category fetched successfully.");
+		} else {
+			return ConstantMethods.failureRespone("No doctor is available with specialization");
+		}
+
 	}
 
 }

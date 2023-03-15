@@ -13,7 +13,9 @@ public interface SpecializationRepository extends JpaRepository<Specialization, 
 
 	List<Specialization> findSpecializationBySpecializationIdIn(List<Integer> specializationId);
 	
-	Specialization findSpecializatinBySpecializationId(Long specializationId);
+	Specialization findSpecializationBySpecializationId(Long specializationId);
+	
+	Specialization findSpecializatinoByCategory(String category);
 	
 //	List<Specialization>
 

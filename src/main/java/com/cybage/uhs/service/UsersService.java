@@ -2,34 +2,38 @@ package com.cybage.uhs.service;
 
 import java.util.Set;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
 import com.cybage.uhs.model.Specialization;
 import com.cybage.uhs.model.Users;
 
 public interface UsersService {
 
-	public APIResponseEntity addUser(Users user);
+	public ApiResponseEntity addUser(Users user);
 
-	public APIResponseEntity addSpecialization(Long usersId, Set<Specialization> specializationsList);
+	public ApiResponseEntity addSpecialization(Long usersId, Set<Specialization> specializationsList);
 
-	public APIResponseEntity getAllUsersDetails();
+	public ApiResponseEntity getAllUsersDetails();
 
-	public APIResponseEntity getAllUsersByUsersRole(Long usersRoleId);
+	public ApiResponseEntity getAllUsersByUsersRole(Long usersRoleId);
 
-	public APIResponseEntity getAllUsersDetailsByAcountStatus(String accountStatus);
+	public ApiResponseEntity getAllUsersDetailsByAcountStatus(String accountStatus);
+	
+	public ApiResponseEntity getAllNontActiveUsers();
 
-	public APIResponseEntity updateUser(Users user, Long usersId);
+	public ApiResponseEntity updateUser(Users user, Long usersId);
 
 	public String activateUsersAccount(Long usersId);
 
-	public APIResponseEntity getUserByUsersId(Long usersId);
+	public ApiResponseEntity getUserByUsersId(Long usersId);
 
-	public APIResponseEntity deleteUserById(Long usersId);
+	public ApiResponseEntity deleteUserById(Long usersId);
 
-	public APIResponseEntity verifyEmailWithOTP(String email, int userEnteredOtp);
+	public ApiResponseEntity verifyEmailWithOTP(String email, int userEnteredOtp);
 
-	public APIResponseEntity unblockUsersAccount(Long usersId);
+	public ApiResponseEntity unblockUsersAccount(Long usersId);
 
-	public APIResponseEntity loginUserByEmail(String email);
+	public ApiResponseEntity loginUserByEmail(String email);
+	
+	public ApiResponseEntity getAllDoctorsWithSpecialization(String specialization);
 
 }

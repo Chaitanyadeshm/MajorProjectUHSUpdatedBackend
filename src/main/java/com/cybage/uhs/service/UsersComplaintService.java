@@ -1,20 +1,20 @@
 package com.cybage.uhs.service;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
 import com.cybage.uhs.model.UsersComplaint;
 
 public interface UsersComplaintService {
 
-	public APIResponseEntity getAllComplaints();
+	public ApiResponseEntity getAllComplaints();
 
-	public APIResponseEntity getComplaintById(Long usersComplaintId);
+	public ApiResponseEntity getComplaintById(Long usersComplaintId);
 
-	public APIResponseEntity addComplaint(UsersComplaint usersComplaint);
+	public ApiResponseEntity addComplaint(UsersComplaint usersComplaint);
 
-	public APIResponseEntity updateComplaint(UsersComplaint complaint, Long usersComplaintId);
+	public ApiResponseEntity updateComplaint(UsersComplaint complaintWithDescription);
 
-	public APIResponseEntity getComplaintsUsersById(Long usersId);
+	public ApiResponseEntity getComplaintsUsersById(Long usersId);
 
-	public APIResponseEntity sendReminder(Long usersComplaintId);
+	public ApiResponseEntity sendReminder(Long usersComplaintId);
 
 }

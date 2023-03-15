@@ -16,7 +16,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.http.HttpStatus;
 //import org.springframework.mail.javamail.JavaMailSender;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
 import com.cybage.uhs.model.MailTemplateModel;
 import com.cybage.uhs.model.PatientsAppointments;
 import com.cybage.uhs.model.Users;
@@ -28,8 +28,8 @@ public class ConstantMethods {
 
 	private static final Logger LOG = LogManager.getLogger(ConstantMethods.class);
 	
-	public static APIResponseEntity successRespone(Object data, String message) {
-		APIResponseEntity successResponse = new APIResponseEntity();
+	public static ApiResponseEntity successRespone(Object data, String message) {
+		ApiResponseEntity successResponse = new ApiResponseEntity();
 		successResponse.setHttpStatusCode(HttpStatus.OK.value());
 		successResponse.setHttpStatus(HttpStatus.OK);
 		successResponse.setStatus(true);
@@ -38,8 +38,8 @@ public class ConstantMethods {
 		return successResponse;
 	}
 
-	public static APIResponseEntity failureRespone(String message, HttpStatus... code) {
-		APIResponseEntity failureResponse = new APIResponseEntity();
+	public static ApiResponseEntity failureRespone(String message, HttpStatus... code) {
+		ApiResponseEntity failureResponse = new ApiResponseEntity();
 		if(code.length > 0) {
 			failureResponse.setHttpStatus(code[0]);
 			failureResponse.setHttpStatusCode(code[0].value());
@@ -54,8 +54,8 @@ public class ConstantMethods {
 
 	public static int generateOtp() {
 		Random randomOTP = new Random();
-		char[] otp = new char[ConstantVars.OTP_LENGTH];
-		for (int i = 0; i < ConstantVars.OTP_LENGTH; i++) {
+		char[] otp = new char[VariablesUtil.OTP_LENGTH];
+		for (int i = 0; i < VariablesUtil.OTP_LENGTH; i++) {
 			otp[i] = (char) (randomOTP.nextInt(10) + 48);
 		}
 		return Integer.parseInt(String.valueOf(otp));

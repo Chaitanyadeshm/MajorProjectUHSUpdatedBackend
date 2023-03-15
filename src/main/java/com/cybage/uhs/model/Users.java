@@ -29,6 +29,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel(description = "Details about the user")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -38,65 +42,79 @@ import lombok.ToString;
 public class Users implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	@ApiModelProperty(notes = "The unique id of the user")
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "usersId")
+	@Column
 	private Long usersId;
 
+	@ApiModelProperty(notes = "The first name of the user")
 	@NotNull
-	@Column(name = "firstname")
+	@Pattern(regexp = "(?i)(^[a-z])((?![ .,'-]$)[a-z .,'-]){1,24}$", message = "Firstname should contains atleast 2 characters")
+	@Column
 	private String firstname;
 
+	@ApiModelProperty(notes = "The last name of the user")
 	@NotNull
-	@Column(name = "lastname")
+	@Pattern(regexp = "(?i)(^[a-z])((?![ .,'-]$)[a-z .,'-]){1,24}$", message = "Lastname should contains atleast 2 characters")
+	@Column
 	private String lastname;
 
+	@ApiModelProperty(notes = "The email id of the user")
 	@NotNull
-	@Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}")
-	@Column(name = "email")
+	@Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}", message="Invalid Email id")
+	@Column
 	private String email;
 
-	@Column(name = "usersProfileUrl")
+	@ApiModelProperty(notes = "The profile url of the user")
+	@Column
 	private String usersProfileUrl;
 
+	@ApiModelProperty(notes = "The mobile number of the user")
 	@NotNull
-	@Size(min = 10, max = 10)
-	@Pattern(regexp = "(^$|[0-9]{10})")
-	@Column(name = "mobile")
+//	@Size(min = 10, max = 10, message = "Mobile number must be 10 digits")
+	@Pattern(regexp = "(^$|[1-9]{10})", message="Mobile number should be 10 digits and it cannot start with 0")
+	@Column
 	private String mobile;
 
-	@Column(name = "loginAttempts")
+	@ApiModelProperty(notes = "The number of login attempts made by the user")
+	@Column
 	private Integer loginAttempts;
 
-	@Column(name = "usersOTP")
+	@ApiModelProperty(notes = "The OTP sent to the user for authentication")
+	@Column
 	private Integer usersOTP;
 
-	@NotNull
-	@Column(name = "accountCreated")
+	@ApiModelProperty(notes = "The timestamp when the user account was created")
+//	@NotNull
+	@Column
 	private Timestamp accountCreated;
 
-	@NotNull
+	@ApiModelProperty(notes = "The role assigned to the user")
+//	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
 	@JsonIgnoreProperties(value = { "Users", "hibernateLazyInitializer" })
 	@JoinColumn(name = "usersRoleId")
 	private UsersRole usersRole;
 
-	@NotNull
+	@ApiModelProperty(notes = "The account status of the user")
+//	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
 	@JsonIgnoreProperties(value = { "Users", "hibernateLazyInitializer" })
 	@JoinColumn(name = "usersAccountStatus")
 	private UsersAccountStatus accountStatus;
 
+	@ApiModelProperty(notes = "The specializations of the user")
 	// @formatter:off
-	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	@JoinTable(name = "doctors_specializations", 
-	joinColumns = {
-			@JoinColumn(name = "usersId") },
-	inverseJoinColumns = {
-			@JoinColumn(name = "specializationId") }
-	)
-	private Set<Specialization> specialization = new HashSet<>();
-	// @formatter:on
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(name = "doctors_specializations", 
+        joinColumns = {
+            @JoinColumn(name = "usersId") },
+        inverseJoinColumns = {
+            @JoinColumn(name = "specializationId") }
+    )
+    private Set<Specialization> specialization = new HashSet<>();
+    // @formatter:on
 
 	public void addSpecializataion(Specialization newSpecialization) {
 		this.specialization.add(newSpecialization);

@@ -6,17 +6,16 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
 import com.cybage.uhs.model.UsersComplaint;
 import com.cybage.uhs.service.implementation.UsersComplaintServiceImpl;
 
 @RestController
-@RequestMapping("/patients-complaints")
+@RequestMapping("/complaints")
 @CrossOrigin
 public class UsersComplaintController {
 
@@ -28,37 +27,37 @@ public class UsersComplaintController {
 	}
 
 	@GetMapping("/get-all")
-	public ResponseEntity<APIResponseEntity> getAllUsers() {
-		APIResponseEntity allComplaints = usersComplaintService.getAllComplaints();
+	public ResponseEntity<ApiResponseEntity> getAllUsers() {
+		ApiResponseEntity allComplaints = usersComplaintService.getAllComplaints();
 		return new ResponseEntity<>(allComplaints , allComplaints.getHttpStatus());
 	}
 
 	@GetMapping("/complaint-by-users-id/{usersId}")
-	public ResponseEntity<APIResponseEntity> getPatientComplaintsIdPatientById(@PathVariable Long usersId) {
-		APIResponseEntity getComplaintsOfUser = usersComplaintService.getComplaintsUsersById(usersId);
+	public ResponseEntity<ApiResponseEntity> getPatientComplaintsIdPatientById(@PathVariable Long usersId) {
+		ApiResponseEntity getComplaintsOfUser = usersComplaintService.getComplaintsUsersById(usersId);
 		return new ResponseEntity<>(getComplaintsOfUser, getComplaintsOfUser.getHttpStatus());
 	}
 	
 	@GetMapping("/get-complaint-by-id/{patientComplaintsId}")
-	public ResponseEntity<APIResponseEntity> getPatientComplaintsIdById(@PathVariable Long patientComplaintsId) {
-		APIResponseEntity getComplaintResponse = usersComplaintService.getComplaintById(patientComplaintsId);
+	public ResponseEntity<ApiResponseEntity> getPatientComplaintsIdById(@PathVariable Long patientComplaintsId) {
+		ApiResponseEntity getComplaintResponse = usersComplaintService.getComplaintById(patientComplaintsId);
 		return new ResponseEntity<>(getComplaintResponse, getComplaintResponse.getHttpStatus());
 	}
 	@GetMapping("/send-reminder/{patientComplaintsId}")
-	public ResponseEntity<APIResponseEntity> sendReminder(@PathVariable Long patientComplaintsId) {
-		APIResponseEntity sendReminderRespone= usersComplaintService.sendReminder(patientComplaintsId);
+	public ResponseEntity<ApiResponseEntity> sendReminder(@PathVariable Long patientComplaintsId) {
+		ApiResponseEntity sendReminderRespone= usersComplaintService.sendReminder(patientComplaintsId);
 			return new ResponseEntity<>(sendReminderRespone, sendReminderRespone.getHttpStatus());
 	}
 	
 	@PostMapping("/add-complaint")
-	public ResponseEntity<APIResponseEntity> addComplint(@RequestBody UsersComplaint patientComplaints) {
-		APIResponseEntity registerComplaintResonse = usersComplaintService.addComplaint(patientComplaints);
+	public ResponseEntity<ApiResponseEntity> addComplint(@RequestBody UsersComplaint patientComplaints) {
+		ApiResponseEntity registerComplaintResonse = usersComplaintService.addComplaint(patientComplaints);
 			return new ResponseEntity<>(registerComplaintResonse, registerComplaintResonse.getHttpStatus());
 	}
 	
-	@PutMapping("/update-complaint/{patientComplaintsId}")
-	public ResponseEntity<APIResponseEntity> updateUser(@RequestBody UsersComplaint complaint, @PathVariable Long patientComplaintsId) {
-		APIResponseEntity updateComplaintResponse = usersComplaintService.updateComplaint(complaint, patientComplaintsId);
+	@PostMapping("/update-complaint")
+	public ResponseEntity<ApiResponseEntity> updateUser(@RequestBody UsersComplaint complaint) {
+		ApiResponseEntity updateComplaintResponse = usersComplaintService.updateComplaint(complaint);
 			return new ResponseEntity<>(updateComplaintResponse, updateComplaintResponse.getHttpStatus());
 	}
 	

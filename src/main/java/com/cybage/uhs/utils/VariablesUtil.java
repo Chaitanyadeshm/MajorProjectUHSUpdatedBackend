@@ -1,6 +1,6 @@
 package com.cybage.uhs.utils;
 
-public class ConstantVars {
+public class VariablesUtil {
 
 	public static final String ADMIN_EMAIL = "admin@cybage.com";
 	public static final String TRY_AGAIN_LATER = "\nTry again later or write email to " + ADMIN_EMAIL;
@@ -9,7 +9,7 @@ public class ConstantVars {
 	public static final int MAX_LOGIN_ATTEMPTS_ALLOWED = 3;
 
 	public static enum USERS_ROLE {
-		ADMIN, DOCTOR, PATIENT, NURSE, RECEPTIONIST
+		 	ADMIN, DOCTOR, PATIENT, NURSE, RECEPTIONIST
 	};
 
 	public static enum ACCOUNT_STATUS {
@@ -36,7 +36,7 @@ public class ConstantVars {
 	public static final String ALL_USERS_FETCHED_SUCCESSFULLY = "Users fetched successfully.";
 	public static final String USERS_BY_USER_ROLE_FETCHED_SUCCESSFULLY = "Users of specific user role fetched successfully.";
 	public static final String USERS_OF_USER_ROLE_NOT_PRESENT = "No users available of specific user role.";
-	public static final String USER_ALREADY_REGISTERED_WITH_THIS_ACCOUNT = "Email already registered.\nTry logging in.";
+	public static final String USER_ALREADY_REGISTERED_WITH_THIS_EMAIL = "Email already registered.\nTry logging in.";
 	public static final String USER_REGISTERATION_FAILED = "Could not register account at this moment." + TRY_AGAIN_LATER;
 	public static final String USER_ALREADY_EXISTS = "You already have an account with this email.\nTry logging in.";
 	public static final String USER_ALREADY_REGISTERED = "Could not create account." + TRY_AGAIN_LATER;
@@ -54,7 +54,7 @@ public class ConstantVars {
 	public static final String ALL_PATIENTS_FETCHED_SUCCESSFULLY = "List of patients details fetched successfully.";
 	public static final String NO_PATIENTS_AVAILABLE = "There are no patients available at this moment.";
 	public static final String ALL_USERS_BY_ACCOUNT_STATUS_FETCHED_SUCCESSFULLY = "List of all users by thier account status fetched successfully.";
-	public static final String USERS_WITH_ACCOUNT_STATUS_ARE_NOT_PRESENT = "There are no users present with account status you have entered.";
+	public static final String USERS_WITH_ACCOUNT_STATUS_ARE_NOT_PRESENT = "There are no users present with account status you entered.";
 	public static final String ALL_USERS_BY_ACCOUNT_STATUS_FETCH_FAILED = "Could not fetch list of users by thier account status.";
 
 	public static final String ERROR_RESPONSE = "Something went wrong." + TRY_AGAIN_LATER;
@@ -92,6 +92,7 @@ public class ConstantVars {
 	public static final String SOMETHING_WENT_WRONG = "Something went wrong." + TRY_AGAIN_LATER;
 
 	public static final String ALL_SPECIALIZATION_FETCHED_SUCCESSFULLY = "List of all specialization fetched successfully.";
+	public static final String SPECIALIZATION_ADDDED_SUCCESSFULLY = "New Specialization added successfully.";
 
 	// @formatter:off
 	

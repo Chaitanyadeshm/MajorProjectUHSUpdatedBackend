@@ -1,11 +1,14 @@
 package com.cybage.uhs.service;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
+import com.cybage.uhs.model.Specialization;
 
 public interface SpecializationService {
 
-	public APIResponseEntity getAllSpiecialization();
+	public ApiResponseEntity getAllSpiecialization();
 
-	public APIResponseEntity getByCategory(String category);
+	public ApiResponseEntity getByCategory(String category);
+
+	public ApiResponseEntity addSpecialization(Specialization specialization);
 
 }

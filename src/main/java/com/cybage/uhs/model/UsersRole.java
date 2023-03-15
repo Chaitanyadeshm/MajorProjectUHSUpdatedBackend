@@ -11,48 +11,34 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
+//@Data // @ToString @Getter @Setter @RequiredArgsConstructor
 @Getter
 @Setter
-//@ToString
 @Entity
+@ApiModel(description = "Class representing a user role in the system.")
 public class UsersRole {
-		
-	@Id 
+
+	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@ApiModelProperty(notes = "The unique ID of the user role.")
 	private Long usersRoleId;
 
 	@Column
-	private String roleName;	
-	
-	@OneToMany(mappedBy= "usersRole")
+	@ApiModelProperty(notes = "The name of the user role.")
+	private String roleName;
+
+	@OneToMany(mappedBy = "usersRole")
 	@JsonIgnore
 	private List<Users> users;
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 }
-

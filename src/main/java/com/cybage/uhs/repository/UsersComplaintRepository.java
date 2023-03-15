@@ -11,7 +11,7 @@ import com.cybage.uhs.model.Users;
 
 @Repository
 public interface UsersComplaintRepository extends JpaRepository<UsersComplaint, Integer> {
-	UsersComplaint findByUsersComplaintId(Long patientComplaintsId);
+	UsersComplaint findByUsersComplaintId(Long usersComplaintId);
 	
 	List<UsersComplaint> findByUsersDetails(Users userDetails);
 	

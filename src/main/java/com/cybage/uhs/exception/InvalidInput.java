@@ -1,10 +1,15 @@
 package com.cybage.uhs.exception;
 
-public class InvalidInput extends RuntimeException {
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+
+public class InvalidInput extends ConstraintViolationException {
 
 	private static final long serialVersionUID = 1L;
 
-	public InvalidInput(String msg) {
+	public InvalidInput(Set<? extends ConstraintViolation<?>> msg) {
 		super(msg);
 	}
 

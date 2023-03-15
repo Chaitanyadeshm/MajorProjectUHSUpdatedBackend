@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cybage.uhs.bean.APIResponseEntity;
+import com.cybage.uhs.bean.ApiResponseEntity;
 import com.cybage.uhs.model.MailTemplateModel;
 import com.cybage.uhs.model.Users;
 import com.cybage.uhs.model.UsersAccountStatus;
@@ -17,7 +17,7 @@ import com.cybage.uhs.repository.UsersComplaintRepository;
 import com.cybage.uhs.repository.UsersRepository;
 import com.cybage.uhs.service.UsersComplaintService;
 import com.cybage.uhs.utils.ConstantMethods;
-import com.cybage.uhs.utils.ConstantVars;
+import com.cybage.uhs.utils.VariablesUtil;
 
 @Service
 public class UsersComplaintServiceImpl implements UsersComplaintService {
@@ -35,21 +35,21 @@ public class UsersComplaintServiceImpl implements UsersComplaintService {
 	}
 
 	@Override
-	public APIResponseEntity getAllComplaints() {
+	public ApiResponseEntity getAllComplaints() {
 		List<UsersComplaint> allComplaints = usersComplaintRepository.findAll();
 		return ConstantMethods.successRespone(allComplaints, "All complaints fetched successfully.");
 	}
 
 	@Override
-	public APIResponseEntity getComplaintById(Long usersComplaintId) {
+	public ApiResponseEntity getComplaintById(Long usersComplaintId) {
 		UsersComplaint complaint = usersComplaintRepository.findByUsersComplaintId(usersComplaintId);
 		return ConstantMethods.successRespone(complaint,
 				"Complaint with id " + usersComplaintId + " fetched successfully.");
 	}
 
 	@Override
-	public APIResponseEntity addComplaint(UsersComplaint usersComplaint) {
-		usersComplaint.setComplaintStatus(ConstantVars.COMPLAINT_STATUS.UNRESOLVED.toString());
+	public ApiResponseEntity addComplaint(UsersComplaint usersComplaint) {
+		usersComplaint.setComplaintStatus(VariablesUtil.COMPLAINT_STATUS.UNRESOLVED.toString());
 		usersComplaint.setCreatedTime(new Timestamp(new Date().getTime()));
 		usersComplaint.setReminderSent(0);
 		Users usersDetails = usersRepository.findUsersByUsersId(usersComplaint.getUsersDetails().getUsersId());
@@ -58,7 +58,7 @@ public class UsersComplaintServiceImpl implements UsersComplaintService {
 		return sendComplaintDetailsOnMail(newPatientComplaints);
 	}
 
-	private APIResponseEntity sendComplaintDetailsOnMail(UsersComplaint complaint) {
+	private ApiResponseEntity sendComplaintDetailsOnMail(UsersComplaint complaint) {
 		MailTemplateModel newRegisteredComplaintMailBody = new MailTemplateModel();
 		newRegisteredComplaintMailBody.setUser(complaint.getUsersDetails());
 		newRegisteredComplaintMailBody.setMailSubject("Complaint Details");
@@ -74,29 +74,29 @@ public class UsersComplaintServiceImpl implements UsersComplaintService {
 		// @formatter:on
 		newRegisteredComplaintMailBody.setMailBody(newComplaintBody);
 		if (ConstantMethods.isMailSentSuccessfully(newRegisteredComplaintMailBody)) {
-			return ConstantMethods.successRespone(complaint, ConstantVars.COMPLAINT_REGISTERED_SUCCESSFULLY);
+			return ConstantMethods.successRespone(complaint, VariablesUtil.COMPLAINT_REGISTERED_SUCCESSFULLY);
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.COMPLAINT_REGISTERATION_FAILED);
+			return ConstantMethods.failureRespone(VariablesUtil.COMPLAINT_REGISTERATION_FAILED);
 		}
 
 	}
 
 	@Override
-	public APIResponseEntity updateComplaint(UsersComplaint complaint, Long usersComplaintId) {
-
-		Users usersDetails = usersRepository.findUsersByUsersId(usersComplaintId);
-		complaint.setUsersDetails(usersDetails);
-		complaint.setUsersComplaintId(usersComplaintId);
-		complaint.setComplaintStatus(ConstantVars.COMPLAINT_STATUS.RESOLVED.toString());
-		UsersComplaint usersComplaint = usersComplaintRepository.save(complaint);
-		return sendComplaintUpdatesOnMail(usersComplaint);
+	public ApiResponseEntity updateComplaint(UsersComplaint complaintWithDescription) {
+		System.out.println("complaint id: "+ complaintWithDescription.getUsersComplaintId());
+		UsersComplaint complaint = usersComplaintRepository.findByUsersComplaintId(complaintWithDescription.getUsersComplaintId());
+		System.out.println("status: "+ VariablesUtil.COMPLAINT_STATUS.RESOLVED.toString());
+		complaint.setComplaintStatus(VariablesUtil.COMPLAINT_STATUS.RESOLVED.toString());
+		System.out.println("complaint's status: "+ complaint.getComplaintStatus());
+		complaint.setAdminReply(complaintWithDescription.getAdminReply());
+		UsersComplaint updatedComplaint = usersComplaintRepository.save(complaint);
+		return sendComplaintUpdatesOnMail(updatedComplaint);
 	}
 
-	private APIResponseEntity sendComplaintUpdatesOnMail(UsersComplaint complaint) {
-
+	private ApiResponseEntity sendComplaintUpdatesOnMail(UsersComplaint complaint) {
 		//@formatter:off
 		String complaintUpdatesMailBody = 
-				  "    <p style='font-size:1.1em'>Hi " + complaint.getUsersDetails().getFirstname() + " " + complaint.getUsersDetails().getLastname() +",</p>" 
+				  "    <p style='font-size:1.1em'>Hi, " + complaint.getUsersDetails().getFirstname() + " " + complaint.getUsersDetails().getLastname() +",</p>" 
 				+ "    <p> Your complaint has been resolved. "
 				+ " 	We are sorry for the inconvenience.</p>"
 				+ "    <p> Please find below your complaint's details:</p>" 
@@ -105,27 +105,27 @@ public class UsersComplaintServiceImpl implements UsersComplaintService {
 				+ "		Updated Status: " + complaint.getComplaintStatus() + "</br> " 
 				+ "		Response: " + complaint.getAdminReply() + "</br> " 
 				+ "		Created on: " + complaint.getCreatedTime();
-		// @formatter:on
+		//@formatter:on
 		MailTemplateModel updatesOnComplaintMailTemplate = new MailTemplateModel();
 		updatesOnComplaintMailTemplate.setMailSubject("Updates on your Complaint");
 		updatesOnComplaintMailTemplate.setUser(complaint.getUsersDetails());
 		updatesOnComplaintMailTemplate.setMailBody(complaintUpdatesMailBody);
 		if (ConstantMethods.isMailSentSuccessfully(updatesOnComplaintMailTemplate)) {
-			return ConstantMethods.successRespone(complaint, ConstantVars.COMPLAINT_UPDATED_SUCCESSFULLY);
+			return ConstantMethods.successRespone(complaint, VariablesUtil.COMPLAINT_UPDATED_SUCCESSFULLY);
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.COMPLAINT_UPDATION_FAILED);
+			return ConstantMethods.failureRespone(VariablesUtil.COMPLAINT_UPDATION_FAILED);
 		}
 	}
 
 	@Override
-	public APIResponseEntity getComplaintsUsersById(Long usersId) {
+	public ApiResponseEntity getComplaintsUsersById(Long usersId) {
 		Users userDetails = usersRepository.findUsersByUsersId(usersId);
 		List<UsersComplaint> allComplaintsPatientId = usersComplaintRepository.findByUsersDetails(userDetails);
 		return ConstantMethods.successRespone(allComplaintsPatientId, "All complaints for user fetched successfully.");
 	}
 
 	@Override
-	public APIResponseEntity sendReminder(Long usersComplaintId) {
+	public ApiResponseEntity sendReminder(Long usersComplaintId) {
 		UsersComplaint complaint = usersComplaintRepository.findByUsersComplaintId(usersComplaintId);
 		UsersAccountStatus userAccountStatus = usersAccountStatusRepository
 				.findUsersAccountStatusByUsersAccountStatusId(
@@ -148,9 +148,9 @@ public class UsersComplaintServiceImpl implements UsersComplaintService {
 		sendReminderMailTemplate.setMailSubject("Complaint's Reminder of complaint id: " + usersComplaintId);
 		sendReminderMailTemplate.setMailBody(sendReminderMailBody);
 		if (ConstantMethods.isMailSentSuccessfully(sendReminderMailTemplate)) {
-			return ConstantMethods.successRespone(complaint, ConstantVars.COMPLAINT_REMINDER_SENT_SUCCESSFULLY);
+			return ConstantMethods.successRespone(complaint, VariablesUtil.COMPLAINT_REMINDER_SENT_SUCCESSFULLY);
 		} else {
-			return ConstantMethods.failureRespone(ConstantVars.COMPLAINT_REMINDER_SENT_FAILED);
+			return ConstantMethods.failureRespone(VariablesUtil.COMPLAINT_REMINDER_SENT_FAILED);
 		}
 	}
 

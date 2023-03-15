@@ -13,15 +13,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorMessage {
+public class ExceptionResponse {
 
-	private int statusCode;
 	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")
 	private Date timeStamp;
 	
 	private String detailedMessage;
 	
-	private String urlDescription;
+	private String url;
 
 }
