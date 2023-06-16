@@ -23,6 +23,4 @@ public class ApiResponseEntity {
 	
 	private int httpStatusCode;
 	
-	
-
 }
